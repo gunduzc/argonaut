@@ -48,7 +48,7 @@ else
 fi
     
 
-# --- Tier 4: Extended Targets ---
+# --- Tier 3: Extended Targets ---
 echo "--> Building Extended Targets..."
 build_for freebsd amd64
 build_for openbsd amd64
