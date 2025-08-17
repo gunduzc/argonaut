@@ -60,6 +60,8 @@ level.
 Here, the code is easily auditable by anyone who has ever used a programming 
 language.
 
+### Usage and Installation
+
 ```bash
 # === INSTALLATION ============================================================
 # Prerequisite: Ensure the Go toolchain (1.18+) is installed.
