@@ -44,7 +44,7 @@ The way I see it, this tool can be used in two ways.
 1. You use it as an access measure, only deriving the credientials for your
 service provider that holds your actual secrets.
 
-2. You use it for entire digital identity with various salts, completely 
+2. You use it for your entire digital identity with various salts, completely 
 replacing other password managers.
 
 For the former usecase, this is a tool to reach your secrets from anywhere in
