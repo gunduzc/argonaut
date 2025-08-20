@@ -1,6 +1,6 @@
 package main
 
-import ( 
+import (
 	"encoding/base64"
 	"encoding/hex"
 	"flag"
@@ -16,8 +16,8 @@ import (
 func main() {
 	saltStr := flag.String("salt", "", "Salt string (non-optional)")
 
-	par := flag.Uint("p", 12, "Parallelism (threads)")
-	mem := flag.Uint("mem", 4096, "Memory cost in MiB")
+	par := flag.Uint("p", 8, "Parallelism (threads)")
+	mem := flag.Uint("mem", 2048, "Memory cost in MiB")
 	tim := flag.Uint("time", 2, "Time cost (iterations)")
 	keyLen := flag.Uint("len", 128, "Derived key length in bytes")
 	of := flag.String("out", "", "Path to save raw binary key to")
