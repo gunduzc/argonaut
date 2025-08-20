@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-VERSION="v1.0.0"
+VERSION="v1.0.3"
 if [ -n "$1" ]; then
 	VERSION=$1
 fi
