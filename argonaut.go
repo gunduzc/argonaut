@@ -14,27 +14,31 @@ import (
 )
 
 func main() {
-	// Command line flags
-	par := flag.Uint("p", 4, "Parallelism (threads). Set this to the number of threads you have.")
-	mem := flag.Uint("mem", 1024, "Memory cost in MiB. Set this as high as comfortably possible for your system.")
-	tim := flag.Uint("time", 1, "Time cost (iterations). If you're unhappy with the memory you have, increase this to increase the cost for brute force attacks.")
-	saltStr := flag.String("salt", "", "Salt string (required).")
-	keyLen := flag.Uint("len", 128, "Derived key length in bytes.")
-	useHex := flag.Bool("hex", false, "Use hex, only for text output.")
-	outFile := flag.String("out", "", "Path to save the raw binary key to.")
-	passStdin := flag.Bool("stdin", false, "Read master password from stdin.")
+	saltStr := flag.String("salt", "", "Salt string (non-optional)")
+
+	par := flag.Uint("p", 12, "Parallelism (threads)")
+	mem := flag.Uint("mem", 4096, "Memory cost in MiB")
+	tim := flag.Uint("time", 2, "Time cost (iterations)")
+	keyLen := flag.Uint("len", 128, "Derived key length in bytes")
+	of := flag.String("out", "", "Path to save raw binary key to")
+	useHex := flag.Bool("hex", false, "Use hex, only for text output")
+	passStdin := flag.Bool("stdin", false, "Read password from stdin")
 	flag.Parse()
 
+	// For disabling timestamps in errors
+	log.SetFlags(0)
+
 	if *saltStr == "" {
-		log.Fatal("Error: a salt must be provided via the -salt flag.")
+		log.Fatal("Error: Provide a salt via the -salt flag.")
 	}
 
-	if *useHex && *outFile != "" {
+	if *useHex && *of != "" {
 		log.Fatal("Error: -hex cannot be used alongside -out.")
 	}
 
 	if len(*saltStr) < 16 {
-		fmt.Fprintln(os.Stderr, "Warning: a salt of at least 16 characters is recommended for maximum security.")
+		fmt.Fprintln(os.Stderr, "Warning: a salt of at least 16",
+		"characters is recommended for maximum security.")
 	}
 
 
@@ -56,14 +60,14 @@ func main() {
 	}
 
 	// Where the magic happens
-	derivedKey := argon2.IDKey(
+	dk := argon2.IDKey(
 		passwordBytes,
 		[]byte(*saltStr),
 		uint32(*tim),
 		uint32(*mem*1024),
 		uint8(*par),
 		uint32(*keyLen),
-	)
+	) // derived key
 
 	// We clear the array after we're done, so nobody can read it
 	for i := range passwordBytes {
@@ -71,19 +75,19 @@ func main() {
 	}
 
 	// Output time
-	if *outFile != "" {
-		err := os.WriteFile(*outFile, derivedKey, 0600)
+	if *of != "" {
+		err := os.WriteFile(*of, dk, 0600)
 		if err != nil {
-			log.Fatalf("Error writing key file to %s: %v", *outFile, err)
+			log.Fatalf("Error writing key file to %s: %v", *of, err)
 		}
-		fmt.Fprintf(os.Stderr, "Success! Raw key saved to %s\n", *outFile)
+		fmt.Fprintf(os.Stderr, "Success! Raw key saved to %s\n", *of)
 	} else {
-		var encodedKey string
+		var ek string // Encoded key
 		if *useHex {
-			encodedKey = hex.EncodeToString(derivedKey)
+			ek = hex.EncodeToString(dk)
 		} else {
-			encodedKey = base64.StdEncoding.EncodeToString(derivedKey)
+			ek = base64.StdEncoding.EncodeToString(dk)
 		}
-		fmt.Println(encodedKey)
+		fmt.Println(ek)
 	}
 }

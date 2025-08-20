@@ -1,13 +1,9 @@
 #!/bin/sh
-
-# The complete, professional release script for Argonaut.
-# This builds binaries and checksums for all standard, legacy, and specialized targets.
-
 set -e
 
 VERSION="v1.0.0"
 if [ -n "$1" ]; then
-    VERSION=$1
+	VERSION=$1
 fi
 
 BUILD_DIR="builds"
@@ -15,14 +11,15 @@ PACKAGE_NAME="argonaut-${VERSION}"
 SOURCE_PATH="."
 
 build_for() {
-    os=$1
-    arch=$2
-    echo "--> Building for ${os}/${arch}..."
-    output_name="${BUILD_DIR}/${PACKAGE_NAME}/argonaut-${os}-${arch}"
-    if [ "${os}" = "windows" ]; then
-        output_name="${output_name}.exe"
-    fi
-    GOOS=${os} GOARCH=${arch} go build -trimpath -ldflags="-s -w" -o "${output_name}" ${SOURCE_PATH}
+	os=$1
+	arch=$2
+	echo "--> Building for ${os}/${arch}..."
+	output_name="${BUILD_DIR}/${PACKAGE_NAME}/argonaut-${os}-${arch}"
+	if [ "${os}" = "windows" ]; then
+	output_name="${output_name}.exe"
+	fi
+	GOOS=${os} GOARCH=${arch} go build -trimpath -ldflags="-s -w" \
+		-o "${output_name}" ${SOURCE_PATH}
 }
 
 echo "--> Preparing for release build for version ${VERSION}..."
@@ -38,15 +35,16 @@ build_for darwin arm64
 
 # --- Tier 2: Linux with musl-libc
 if command -v docker >/dev/null 2>&1; then
-    echo "--> Building Linux with musl-libc target..."
-    docker build -t argonaut-release -f Dockerfile.release .
-    container_id=$(docker create argonaut-release)
-    docker cp "${container_id}:/argonaut" "./${BUILD_DIR}/${PACKAGE_NAME}/argonaut-linux-amd64-musl"
-    docker rm "${container_id}"
+	echo "--> Building Linux with musl-libc target..."
+	docker build -t argonaut-release -f Dockerfile.release .
+	container_id=$(docker create argonaut-release)
+	docker cp "${container_id}:/argonaut" \
+		"./${BUILD_DIR}/${PACKAGE_NAME}/argonaut-linux-amd64-musl"
+	docker rm "${container_id}"
 else
-    echo "--> WARNING: docker not found. Skipping musl build."
+	echo "--> WARNING: docker not found. Skipping musl build."
 fi
-    
+	
 
 # --- Tier 3: Extended Targets ---
 echo "--> Building Extended Targets..."
@@ -71,4 +69,4 @@ sha256sum * > SHA256SUMS.txt
 cd ../..
 
 echo ""
-echo "--> Release process complete. Artifacts are in '${BUILD_DIR}/${PACKAGE_NAME}'"
+echo "--> Done. Artifacts are in '${BUILD_DIR}/${PACKAGE_NAME}'"
