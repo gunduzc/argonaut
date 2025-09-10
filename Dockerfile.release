@@ -1,0 +1,34 @@
+# === Stage 1: The Builder ===
+# We start with the official Go image, based on Alpine Linux (which uses musl).
+# This gives us a clean, reproducible build environment with the Go toolchain.
+FROM golang:1.23-alpine AS builder
+
+# Set the working directory inside the container.
+WORKDIR /app
+
+# Copy the Go module files and download dependencies first.
+# This leverages Docker's layer caching for faster subsequent builds.
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the rest of the source code.
+COPY . .
+
+# Build the Argonaut binary.
+# CGO_ENABLED=0 creates a truly static binary with no external dependencies.
+# -ldflags="-s -w" strips debug symbols, making the binary smaller.
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /argonaut .
+
+
+# === Stage 2: The Final Image ===
+# We start from a `scratch` image, which is the smallest possible image.
+# It is completely empty. This is the ultimate expression of minimalism.
+FROM scratch
+
+# Copy only the compiled binary from the 'builder' stage.
+# Nothing else is needed—no shell, no libraries, no OS files. Just our program.
+COPY --from=builder /argonaut /argonaut
+
+# Set the entrypoint for the container. When the container runs, it will
+# execute our binary.
+ENTRYPOINT ["/argonaut"]
