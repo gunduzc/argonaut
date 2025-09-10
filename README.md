@@ -18,7 +18,7 @@ That's when I came up with this design.
 All you need to hold your passwords is to remember your master password, nothing
 travels with you.
 
-### Obligatory Features Disclosure
+### Features
 
 - **Stateless by Design:** No vault to be stolen, synced, or lost. The
 algorithm is the vault.
